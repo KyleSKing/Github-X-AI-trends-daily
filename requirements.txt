@@ -1,0 +1,3 @@
+# Runtime only (not for pip install — deps are system tools)
+# Requires externally: gh CLI, twitter-cli (uv tool)
+# Python stdlib only — no pip packages needed
