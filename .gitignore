@@ -3,3 +3,4 @@ __pycache__/
 .env
 output/
 .venv/
+data/github-star-history.json
