@@ -30,11 +30,11 @@ def main():
         lines.append("\n⚠️ 获取失败或为空")
 
     # ── GitHub Rising ──
-    lines.append(header("GitHub 上升最快 AI 仓库 Top 10"))
+    lines.append(header("GitHub AI 项目增长最快 Top 10"))
     rising = github_trending.rising_top10()
     if rising:
         for i, r in enumerate(rising, 1):
-            lines.append(f"\n**{i}.** {github_trending.format_repo(r)}")
+            lines.append(f"\n**{i}.** {github_trending.format_rising_repo(r)}")
     else:
         lines.append("\n⚠️ 获取失败或为空")
 
