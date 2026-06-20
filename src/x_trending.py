@@ -14,27 +14,8 @@ SEARCH_QUERY = (
 )
 
 
-def _get_twitter_env() -> dict[str, str]:
-    """Extract TWITTER_AUTH_TOKEN and TWITTER_CT0 from bashrc."""
-    result = subprocess.run(
-        ["bash", "-c", "source ~/.bashrc 2>/dev/null; "
-         'echo "AUTH=$TWITTER_AUTH_TOKEN"; echo "CT0=$TWITTER_CT0"'],
-        capture_output=True, text=True, timeout=10
-    )
-    env = {}
-    for line in result.stdout.strip().split("\n"):
-        if line.startswith("AUTH="):
-            env["TWITTER_AUTH_TOKEN"] = line[5:]
-        elif line.startswith("CT0="):
-            env["TWITTER_CT0"] = line[4:]
-    if not env.get("TWITTER_AUTH_TOKEN") or not env.get("TWITTER_CT0"):
-        print("ERROR: TWITTER_AUTH_TOKEN or TWITTER_CT0 not found in env", file=sys.stderr)
-        sys.exit(1)
-    return env
-
-
 def search_twitter(query: str, since: str) -> list[dict]:
-    tw_env = _get_twitter_env()
+    """Search X/Twitter using system-authenticated twitter CLI (no env vars needed)."""
     cmd = [
         "twitter", "search", query,
         "--type", "top", "--lang", "en",
@@ -44,15 +25,14 @@ def search_twitter(query: str, since: str) -> list[dict]:
         "--full-text", "--json",
         "-n", "20"
     ]
-    merged_env = {**os.environ, **tw_env}
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=90, env=merged_env)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
     if result.returncode != 0:
         print(f"ERROR: twitter CLI failed: {result.stderr[:200]}", file=sys.stderr)
         return []
     try:
         data = json.loads(result.stdout)
         if not data.get("ok"):
-            print(f"ERROR: twitter auth failed: {data.get('error', {})}", file=sys.stderr)
+            print(f"ERROR: twitter search failed: {data.get('error', {})}", file=sys.stderr)
             return []
         return data.get("data", [])
     except json.JSONDecodeError as e:
